@@ -1,55 +1,102 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { addUser } from "../utils/userSlice";
+import { BASE_URL } from "../utils/constants"; // Make sure this points to your backend (e.g., http://localhost:7777)
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../utils/constants";
 
-const Login = () => {
+const SignUp = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    if (!emailId || !password) {
-      setError("Email and password are required");
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // Trim inputs to avoid whitespace issues
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmailId = emailId.trim();
+
+    if (!trimmedFirstName || !trimmedLastName || !trimmedEmailId || !password) {
+      setError("All fields are required.");
       return;
     }
     setLoading(true);
-    setError("");
     try {
-      const res = await axios.post(
-        BASE_URL + "/login",
-        { emailId, password },
+      await axios.post(
+        BASE_URL + "/signup",
+        {
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          emailId: trimmedEmailId,
+          password,
+        },
         { withCredentials: true }
       );
-      dispatch(addUser(res.data));
-      navigate("/");
+      navigate("/login");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      // Log the full error for debugging
+      console.error("Signup error:", err.response);
+      setError(
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "Sign up failed."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-100 via-purple-100 to-pink-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-pink-100 via-blue-100 to-purple-100">
       <div className="w-full max-w-md mx-auto bg-white rounded-3xl shadow-2xl p-8">
         <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
-          Welcome Back!
+          Create Account
         </h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleLogin();
-          }}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSignUp} className="space-y-5">
+          {/* First Name */}
+          <div>
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="firstName"
+            >
+              First Name
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              className="input w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+              value={firstName}
+              placeholder="First name"
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+            />
+          </div>
+          {/* Last Name */}
+          <div>
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="lastName"
+            >
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              className="input w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+              value={lastName}
+              placeholder="Last name"
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
+          </div>
+          {/* Email */}
           <div>
             <label
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -57,28 +104,17 @@ const Login = () => {
             >
               Email
             </label>
-            <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2.94 6.94a1.5 1.5 0 0 1 2.12 0L10 11.88l4.94-4.94a1.5 1.5 0 1 1 2.12 2.12l-6 6a1.5 1.5 0 0 1-2.12 0l-6-6a1.5 1.5 0 0 1 0-2.12z" />
-                </svg>
-              </span>
-              <input
-                id="email"
-                type="email"
-                className="input w-full pl-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-                value={emailId}
-                placeholder="you@example.com"
-                onChange={(e) => setEmailId(e.target.value)}
-                required
-              />
-            </div>
+            <input
+              id="email"
+              type="email"
+              className="input w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+              value={emailId}
+              placeholder="you@example.com"
+              onChange={(e) => setEmailId(e.target.value)}
+              required
+            />
           </div>
+          {/* Password */}
           <div>
             <label
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -87,22 +123,12 @@ const Login = () => {
               Password
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                <svg
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 2a6 6 0 0 1 6 6v2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2V8a6 6 0 0 1 6-6zm0 2a4 4 0 0 0-4 4v2h8V8a4 4 0 0 0-4-4zm-4 8v4h8v-4H6z" />
-                </svg>
-              </span>
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                className="input w-full pl-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                className="input w-full py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 value={password}
-                placeholder="Your password"
+                placeholder="Create a password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
@@ -142,7 +168,9 @@ const Login = () => {
               </button>
             </div>
           </div>
+          {/* Error Message */}
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {/* Submit Button */}
           <div className="flex justify-center">
             <button
               className="w-full py-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-md hover:from-purple-600 hover:to-pink-600 focus:outline-none transition disabled:opacity-60"
@@ -169,22 +197,22 @@ const Login = () => {
                       d="M4 12a8 8 0 018-8v8z"
                     ></path>
                   </svg>
-                  Logging in...
+                  Signing up...
                 </span>
               ) : (
-                "Login"
+                "Sign Up"
               )}
             </button>
           </div>
         </form>
         <div className="mt-6 text-center text-gray-500 text-sm">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <button
             type="button"
             className="text-purple-600 hover:underline focus:outline-none"
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/login")}
           >
-            Sign up
+            Login
           </button>
         </div>
       </div>
@@ -192,4 +220,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;

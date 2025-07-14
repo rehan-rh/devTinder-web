@@ -13,7 +13,7 @@ const Body = () => {
   const userData = useSelector((store) => store.user);
 
   const fetchUser = async () => {
-    if(userData){
+    if (userData) {
       return;
     }
     try {
@@ -22,22 +22,25 @@ const Body = () => {
       });
       dispatch(addUser(res.data));
     } catch (err) {
-      if (err.status === 401) {
+      // Fix: err.status should be err.response?.status
+      if (err.response?.status === 401) {
         navigate("/login");
       }
-
       console.error(err);
     }
   };
 
   useEffect(() => {
-      fetchUser();
+    fetchUser();
+    // eslint-disable-next-line
   }, []);
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <NavBar />
-      <Outlet />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
       <Footer />
     </div>
   );
