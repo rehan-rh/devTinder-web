@@ -23,9 +23,9 @@ const Body = () => {
       dispatch(addUser(res.data));
     } catch (err) {
       // Fix: err.status should be err.response?.status
-      if (err.response?.status === 401) {
-        navigate("/login");
-      }
+      //if (err.response?.status === 401) {
+     //   navigate("/login");
+      //}
       console.error(err);
     }
   };
