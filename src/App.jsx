@@ -1,36 +1,42 @@
+// src/App.js
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Body from "./components/Body";
-import Login from "./components/Login";
-import Profile from "./components/Profile";
 import { Provider } from "react-redux";
-import appStore from "./utils/appStore";
+import { PersistGate } from "redux-persist/integration/react";
+import { appStore, persistor } from "./utils/appStore"; // See below for appStore.js
+import HomeScreen from "./components/HomeScreen";
+import Login from "./components/Login";
+import SignUp from "./components/SignUp";
+import Body from "./components/Body";
+import Profile from "./components/Profile";
 import Feed from "./components/Feed";
 import Connections from "./components/Connections";
 import Requests from "./components/Requests";
-import SignUp from "./components/SignUp";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <>
-      <Provider store= {appStore}>
+    <Provider store={appStore}>
+      <PersistGate loading={null} persistor={persistor}>
         <BrowserRouter basename="/">
           <Routes>
-            <Route path="/" element={<Body />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/login" element={<Feed />} />
-              <Route path="/" element={<Feed />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/connections" element={<Connections />} />
-              <Route path="/requests" element={<Requests />} />
+            {/* Public routes (no NavBar/Footer) */}
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+
+            {/* Protected routes (NavBar/Footer) */}
+            <Route element={<Body />}>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/connections" element={<Connections />} />
+                <Route path="/requests" element={<Requests />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>
-        {/* <NavBar/>
-
-      <h1>Hellooo</h1> */}
-      </Provider>
-    </>
+      </PersistGate>
+    </Provider>
   );
 }
 

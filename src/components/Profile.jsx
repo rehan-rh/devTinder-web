@@ -19,7 +19,8 @@ const Profile = () => {
     setLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/projects/mine`, { withCredentials: true });
-      setProjects(res.data);
+      setProjects(Array.isArray(res.data) ? res.data : []);
+
     } catch (err) {
       setProjects([]);
     } finally {
